@@ -48,12 +48,19 @@ assert.match(noItems.row.Flags, /No line items extracted/);
 const badMath = buildReview(fromExtraction({ ...base, subtotal: 999 }), now, null);
 assert.match(badMath.row.Flags, /Line items sum to \$200\.00 but subtotal says \$999\.00/);
 
-// update keeps Status and first-arrival time
-const prev = { 'Received at': '2026-11-01 09:00', 'Invoice ID': 'INV-1001', Status: 'Approved' };
+// update keeps Status and first-arrival time when the figures are unchanged
+const prev = { 'Received at': '2026-11-01 09:00', 'Invoice ID': 'INV-1001', Vendor: 'Acme Supplies', Subtotal: 200, Tax: 20, Total: 220, Currency: '$', Status: 'Approved' };
 const up = buildReview(D, now, prev);
 assert.equal(up.row.Status, 'Approved');
 assert.equal(up.row['Received at'], '2026-11-01 09:00');
 assert.equal(up.updated, true);
+assert.equal(up.row.Flags, '');
+
+// approval does NOT carry across a change to the actual figures — re-extraction with a
+// different total resets Status instead of silently staying Approved (bypass check)
+const changedTotal = buildReview(D, now, { ...prev, Total: 999 });
+assert.equal(changedTotal.row.Status, 'Needs review');
+assert.match(changedTotal.row.Flags, /Figures changed since the last review – approval reset/);
 
 // HTML + XSS escaping + source link
 const docWithSource = fromExtraction({ ...base, source_image_url: 'https://files.example.com/inv1.jpg' });

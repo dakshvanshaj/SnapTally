@@ -67,7 +67,12 @@ function checkMath(doc) {
   return flags;
 }
 
-// existing = the Invoices sheet row already holding this invoice, or null. An update keeps Status.
+const FINANCIAL_FIELDS = ['Vendor', 'Subtotal', 'Tax', 'Total', 'Currency'];
+
+// existing = the Invoices sheet row already holding this invoice, or null. An update keeps Status
+// ONLY if the reviewed figures haven't changed — approval never carries across a change to the
+// actual numbers, so a corrected resend (or a different re-scan of the same invoice) goes back to
+// review instead of silently staying Approved.
 function buildReview(doc, receivedAt, existing) {
   const flags = [];
   const missing = REQUIRED.filter(([k]) => !doc[k]).map(([, label]) => label);
@@ -78,8 +83,12 @@ function buildReview(doc, receivedAt, existing) {
     'Received at': (existing && existing['Received at']) || fmt(ist(receivedAt)), 'Invoice ID': doc.invoiceId || `no-id-${receivedAt.getTime()}`,
     Vendor: doc.vendor, 'Invoice date': doc.invoiceDate, Items: doc.lineItems.length,
     Subtotal: doc.subtotal == null ? '' : doc.subtotal, Tax: doc.tax == null ? '' : doc.tax, Total: doc.total == null ? '' : doc.total,
-    Currency: doc.currency, Status: (existing && existing.Status) || 'Needs review', Flags: flags.join('; '),
+    Currency: doc.currency, Status: '', Flags: '',
   };
+  const changed = existing && FINANCIAL_FIELDS.some((k) => String(existing[k] ?? '') !== String(row[k] ?? ''));
+  if (changed) flags.push('Figures changed since the last review – approval reset');
+  row.Status = (existing && !changed && existing.Status) || 'Needs review';
+  row.Flags = flags.join('; ');
   const subject = `${row.Flags ? '⚠ ' : ''}Invoice to review: ${doc.vendor || '?'} – ${doc.currency}${doc.total == null ? '?' : fmt2(doc.total)}`;
   return { row, subject, updated: !!existing };
 }

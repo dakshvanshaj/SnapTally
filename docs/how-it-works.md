@@ -37,6 +37,7 @@ Rounding tolerance is 2 cents, to absorb normal currency rounding without flaggi
 | `Missing: vendor name, total amount` | The AI couldn't read a required field — usually a poor photo |
 | `No line items extracted` | Nothing legible in the line-item area; check the image quality |
 | The two math-check flags above | The numbers the AI read don't add up |
+| `Figures changed since the last review – approval reset` | This invoice ID was re-extracted with a different vendor/subtotal/tax/total/currency than what's on record |
 
 A row is always written, flagged or not, so nothing silently disappears.
 
@@ -45,8 +46,11 @@ A row is always written, flagged or not, so nothing silently disappears.
 The workflow matches on the invoice number the AI extracted.
 
 - **It updates the row** rather than creating a duplicate.
-- **The Status is never overwritten** — an invoice marked `Approved` stays `Approved`, so a re-send (e.g. a
-  clearer photo of the same invoice) doesn't undo a review that already happened.
+- **The Status stays `Approved` only if the figures haven't changed.** A re-send of the exact same invoice
+  (e.g. a clearer photo) doesn't undo a review that already happened. But if the vendor, subtotal, tax, total or
+  currency come back different — a corrected resend, a flaky re-scan, or someone resubmitting after approval —
+  the row goes back to `Needs review` automatically. Approval never silently carries over a change to the
+  actual numbers.
 
 ## What's real and what's sample
 
