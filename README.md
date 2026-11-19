@@ -1,5 +1,7 @@
 # SnapTally (n8n)
 
+[![Tests](https://github.com/dakshvanshaj/SnapTally/actions/workflows/test.yml/badge.svg)](https://github.com/dakshvanshaj/SnapTally/actions/workflows/test.yml)
+
 Never type another invoice by hand — AI invoice/receipt extraction with a human-review step before anything
 reaches your accounting tool.
 
