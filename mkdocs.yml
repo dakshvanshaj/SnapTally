@@ -1,6 +1,6 @@
 site_name: SnapTally
 site_url: https://dakshvanshaj.com/snap-tally/
-repo_url: https://github.com/dakshvanshaj/snap-tally
+repo_url: https://github.com/dakshvanshaj/SnapTally
 nav:
   - Overview: index.md
   - How it works: how-it-works.md
